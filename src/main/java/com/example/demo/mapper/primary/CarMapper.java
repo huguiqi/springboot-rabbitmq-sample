@@ -1,6 +1,7 @@
 package com.example.demo.mapper.primary;
 
 import com.example.demo.bean.Car;
+import com.example.demo.bean.CarVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,4 +24,11 @@ public interface CarMapper {
     Collection<Car> selectAll();
 
     Collection<Car> search(@Param("make") String make, @Param("model") String model);
+
+    @Select("select sum(year) totalYears,count(*) totalCar from CAR " +
+            "where year > #{year} order by ID")
+    Collection<CarVO> searchSum(@Param("year") Integer year);
+
+
+
 }

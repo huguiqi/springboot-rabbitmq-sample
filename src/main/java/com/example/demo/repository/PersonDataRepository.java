@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.bean.Car;
+import com.example.demo.bean.CarVO;
 import com.example.demo.bean.House;
 import com.example.demo.mapper.primary.CarMapper;
 import com.example.demo.mapper.second.HouseMapper;
@@ -8,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sam on 2017/7/30.
@@ -43,5 +41,14 @@ public class PersonDataRepository {
         map.put("car",list1);
         map.put("house",list2);
         return map;
+    }
+
+    @Transactional
+    public  void addCar(Car car){
+        carMapper.insert(car);
+    }
+
+    public Collection<CarVO> queryCount() {
+        return carMapper.searchSum(10);
     }
 }
