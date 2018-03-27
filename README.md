@@ -200,6 +200,48 @@ Consumer2:
     }
 
 
+5. 最后写一个test生产
+
+
+    package com.example.demo;
+    
+    import com.example.demo.service.Producer;
+    import org.apache.activemq.command.ActiveMQQueue;
+    import org.junit.Test;
+    import org.junit.runner.RunWith;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.boot.test.context.SpringBootTest;
+    import org.springframework.test.context.junit4.SpringRunner;
+    
+    import javax.jms.Destination;
+    
+    /**
+     * Created by sam on 2018/3/27.
+     */
+    
+    @RunWith(SpringRunner.class)
+    @SpringBootTest
+    public class SpringbootJmsApplicationTests {
+    
+        @Autowired
+        private Producer producer;
+    
+        @Test
+        public void contextLoads() throws InterruptedException {
+            Destination destination = new ActiveMQQueue("mytest.queue");
+    
+            for(int i=0; i<100; i++){
+                producer.sendMessage(destination, "第"+i + "只烤鸭");
+            }
+        }
+    
+    }
+
+
+
+运行后，可以看到结果是没有重复的，也没有缺失生产或消费，都是一对一的。
+
+
 解决了共享资源并发的问题。。。。。
 
 
