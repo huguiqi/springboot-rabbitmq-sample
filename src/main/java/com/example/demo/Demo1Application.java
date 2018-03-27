@@ -1,19 +1,22 @@
 package com.example.demo;
 
-import com.example.demo.bean.Car;
-import com.example.demo.mapper.primary.CarMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
-import java.util.List;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class})
 public class Demo1Application extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
@@ -38,28 +41,6 @@ public class Demo1Application extends SpringBootServletInitializer {
                 System.out.println(beanName);
             }
         };
-    }
-
-    @Bean
-    CommandLineRunner demo(CarMapper carMapper){
-    return args ->{
-
-        List<Car> cars = Arrays.asList(
-                new Car("劳斯莱斯", "ls-101", 2013, null),
-                new Car("别摸我", "bmw-102", 2014, null),
-                new Car("奔驰", "bc-111", 2012, null));
-
-        cars.forEach(car -> {
-            carMapper.insert(car);
-            System.out.println(car.toString());
-        });
-
-        System.out.println("---------------selectAll");
-        carMapper.selectAll().forEach(System.out:: println);
-        System.out.println("---------------search");
-        carMapper.search("别摸我",null).forEach(System.out::println);
-    };
-
     }
 
 }
