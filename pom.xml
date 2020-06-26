@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.example</groupId>
-	<artifactId>activeMQ</artifactId>
+	<artifactId>rabbitMQ</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
-	<name>activeMQ</name>
+	<name>rabbitMQ</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -37,15 +37,9 @@
 		</dependency>
 
 
-		<!--<dependency>-->
-			<!--<groupId>org.apache.activemq</groupId>-->
-			<!--<artifactId>activemq-pool</artifactId>-->
-			 <!--<version>5.14.3</version>-->
-		<!--</dependency>-->
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-activemq</artifactId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
 		<dependency>
@@ -58,6 +52,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.69</version>
 		</dependency>
 
 

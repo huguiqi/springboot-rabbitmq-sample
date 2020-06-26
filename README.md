@@ -1,22 +1,76 @@
-# spring-boot-activeMQ
+# spring-boot-rabbitMQ
 
-1. 下载activeMQ
+官网：https://www.rabbitmq.com
 
-[官方地址](http://activemq.apache.org/index.html)
+rabbitmq中文文档：
+    
+    https://rabbitmq.mr-ping.com/
 
-找到对应环境的版本，下载下来后进行安装
 
-2. 安装
+
+
+1. 安装
 
 由于我是迫切想用它，所以用docker直接省了安装这一步。
 
+用的最新的官方镜像：
+    
+    bitnami/rabbitmq:latest
+    
+
+rabbitMQ版本：
+        
+        3.8.2
+
+
+启动成功后，正常情况下会有四个端口号：
+
+* 4369 (epmd) 
+* 25672 (Erlang distribution)
+* 5672, 5671 (启用了 或者 未启用 TLS 的 AMQP 0-9-1)
+* 15672 (如果管理插件被启用)
+
 安装完成后，访问：
 
-http://127.0.0.1:32771
+http://127.0.0.1:15672
 
-由于我用的是docker,端口号32771其实对应的是8161
 
-[参考官方](http://activemq.apache.org/getting-started.html#GettingStarted-Introduction)
+
+2. 新增用户
+
+官网资料上说rabbitMQ有一个默认的guest/guest账号，但是我拉的这个镜像里是没有的。
+
+
+我们看一下有没有用户：
+
+
+
+进入docker:
+        
+        docker exec -it rabbitmq bash
+        
+        
+查看是否有用户：
+
+        rabbitmqctl  list_users
+        
+返回：
+        
+        
+好像看到有个tags和administor 用户，但其实不是用户列表。
+        
+        
+新增一个用户：
+        
+        rabbitmqctl add_user sam 123456
+        
+将这个用户提为管理员：
+        
+        set_user_tags sam administrator
+
+        
+
+
 
 3. 集成springboot
 
@@ -28,11 +82,11 @@ pom.xml:
         <modelVersion>4.0.0</modelVersion>
     
         <groupId>com.example</groupId>
-        <artifactId>activeMQ</artifactId>
+        <artifactId>rabbitMQ</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <packaging>war</packaging>
     
-        <name>activeMQ</name>
+        <name>rabbitMQ</name>
         <description>Demo project for Spring Boot</description>
     
         <parent>
@@ -62,14 +116,14 @@ pom.xml:
     
     
             <!--<dependency>-->
-                <!--<groupId>org.apache.activemq</groupId>-->
-                <!--<artifactId>activemq-pool</artifactId>-->
+                <!--<groupId>org.apache.rabbitMQ</groupId>-->
+                <!--<artifactId>rabbitMQ-pool</artifactId>-->
                  <!--<version>5.14.3</version>-->
             <!--</dependency>-->
     
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-activemq</artifactId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
             </dependency>
     
             <dependency>
@@ -119,123 +173,6 @@ pom.xml:
 4. 写一个最简单的场景demo---生产者消费者
 
 
-生产者：
-
-    package com.example.demo.service;
-    
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.jms.annotation.JmsListener;
-    import org.springframework.jms.core.JmsMessagingTemplate;
-    import org.springframework.stereotype.Service;
-    
-    import javax.jms.Destination;
-    
-    
-    /**
-     * Created by sam on 2018/3/27.
-     */
-    
-    @Service
-    public class Producer {
-    
-        @Autowired // 也可以注入JmsTemplate，JmsMessagingTemplate对JmsTemplate进行了封装
-        private JmsMessagingTemplate jmsTemplate;
-        // 发送消息，destination是发送到的队列，message是待发送的消息
-        public void sendMessage(Destination destination, final String message){
-            jmsTemplate.convertAndSend(destination, message);
-        }
-    
-        @JmsListener(destination = "out.queue")
-        public void consumerMessage(String txt){
-            System.out.println("从consumer2回复的报文是："+txt);
-        }
-    
-    
-    }
-
-
-
-消费者：
-
-
-    package com.example.demo.service;
-    
-    import org.springframework.jms.annotation.JmsListener;
-    import org.springframework.stereotype.Component;
-    
-    /**
-     * Created by sam on 2018/3/27.
-     */
-    @Component
-    public class Consumer {
-    
-        // 使用JmsListener配置消费者监听的队列，其中text是接收到的消息
-        @JmsListener(destination = "mytest.queue")
-        public void receiveQueue(String text) {
-            System.out.println("消费者1消费:"+text);
-        }
-    }
-
-
-Consumer2:
-
-    package com.example.demo.service;
-    
-    import org.springframework.jms.annotation.JmsListener;
-    import org.springframework.messaging.handler.annotation.SendTo;
-    import org.springframework.stereotype.Component;
-    
-    /**
-     * Created by sam on 2018/3/27.
-     */
-    @Component
-    public class Consumer2 {
-    
-        @JmsListener(destination = "mytest.queue")
-        @SendTo("out.queue")
-        public String receiveQueue(String text) {
-            System.out.println("消费者2收到:"+text);
-            return "儿子收到"+text;
-        }
-    }
-
-
-5. 最后写一个test生产
-
-
-    package com.example.demo;
-    
-    import com.example.demo.service.Producer;
-    import org.apache.activemq.command.ActiveMQQueue;
-    import org.junit.Test;
-    import org.junit.runner.RunWith;
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.boot.test.context.SpringBootTest;
-    import org.springframework.test.context.junit4.SpringRunner;
-    
-    import javax.jms.Destination;
-    
-    /**
-     * Created by sam on 2018/3/27.
-     */
-    
-    @RunWith(SpringRunner.class)
-    @SpringBootTest
-    public class SpringbootJmsApplicationTests {
-    
-        @Autowired
-        private Producer producer;
-    
-        @Test
-        public void contextLoads() throws InterruptedException {
-            Destination destination = new ActiveMQQueue("mytest.queue");
-    
-            for(int i=0; i<100; i++){
-                producer.sendMessage(destination, "第"+i + "只烤鸭");
-            }
-        }
-    
-    }
 
 
 
