@@ -213,13 +213,15 @@ pom.xml:
 ![配置](.README_images/f25283ed.png)
 
 
+
+
 9. IM在MQ的这个配置中的请求流程
 
 ![](.README_images/2c949d67.png)
 
 
 
-[参考文章](https://www.jianshu.com/p/ecdc6eab554c)
+[参考文章](https://www.cnblogs.com/mfrank/p/11184929.html)
 
 
 
