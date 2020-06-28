@@ -15,8 +15,8 @@ public class RabbitMQMsgController {
 
     @RequestMapping("sendmsg")
     public void sendMsg(String msg){
-        IMMQMessage immqMessage = new IMMQMessage<String>();
+        IMMQMessage immqMessage = new IMMQMessage();
         immqMessage.setBody(msg);
-        sender.sendMsg(immqMessage,"htone.im.routingkey.push.htoneMsg");
+        sender.sendMsg(immqMessage,"test.im.routingkey.push.htoneMsg");
     }
 }

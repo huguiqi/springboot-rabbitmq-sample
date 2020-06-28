@@ -18,13 +18,31 @@ public class BusinessMessageReceiver {
 
     @RabbitListener(queues = RabbitMQConfig.IM_PUSH_QUEUE_NAME)
     public void receiveA(Message message, Channel channel) throws IOException {
-        String body = new String(message.getBody());
-        IMMQMessage immqMessage = JSON.parseObject(body, IMMQMessage.class);
-        String msg = (String) immqMessage.getBody();
-        log.info("收到业务消息A：{}", msg);
+        IMMQMessage immqMessage = null;
+        String msg = null;
         boolean ack = true;
         Exception exception = null;
-        if (immqMessage.getRetrySize() < 3){
+
+        try {
+            String body = new String(message.getBody(),"utf-8");
+            immqMessage = JSON.parseObject(body, IMMQMessage.class);
+            msg = immqMessage.getBody();
+            log.info("收到业务消息A：{}", msg);
+        } catch (Exception e) {
+            ack = false;
+            exception = e;
+        }
+
+        if (!ack) {
+            log.error("消息格式不正确，error msg:{}", message.getBody());
+            //ack返回false，并重新回到当前队列(这种情况会发生消息堵塞)
+//            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
+            //ack返回true，告诉服务器收到这条消息 已经被我消费了 可以在队列删掉 这样以后就不会再发了
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            return;
+        }
+
+        if (immqMessage.getRetrySize() < 3) {
             try {
                 if (msg.contains("deadletter")) {
                     throw new RuntimeException("dead letter exception");
@@ -37,6 +55,7 @@ public class BusinessMessageReceiver {
 
         if (!ack) {
             log.error("消息消费发生异常，error msg:{}", exception.getMessage(), exception);
+            //ack返回false，并将此条消息从队列中丢弃,因为默认交换机配置了xdl（死信）,则被丢弃的消息会跑到死信队列里
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
         } else {
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
