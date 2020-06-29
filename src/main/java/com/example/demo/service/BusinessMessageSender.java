@@ -4,19 +4,23 @@ import com.alibaba.fastjson.JSON;
 import com.example.demo.bean.IMMQMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Address;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.PostConstruct;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
-import static com.example.demo.config.RabbitMQConfig.IM_DEAD_LETTER_PUSH_EXCHANGE;
-import static com.example.demo.config.RabbitMQConfig.IM_DEFAULT_EXCHANGE_NAME;
+import static com.example.demo.config.RabbitMQConfig.*;
 
 @Slf4j
 @Component
@@ -25,10 +29,12 @@ public class BusinessMessageSender {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private AsyncRabbitTemplate asyncRabbitTemplate;
+
 
     @PostConstruct
     public void init() {
-//        rabbitTemplate.setCorrelationKey(UUID.randomUUID().toString());
         rabbitTemplate.setConfirmCallback((correlationData, ack, error) -> {
             log.info("消息唯一标识：" + correlationData);
             log.info("确认结果：" + ack);
@@ -38,6 +44,7 @@ public class BusinessMessageSender {
                 log.warn("失败原因：{}", error);
             }
         });
+
 
         //成功消费不会回调,没有正确路由到合适的队列，就会回调
         rabbitTemplate.setMandatory(true);
@@ -53,8 +60,28 @@ public class BusinessMessageSender {
         });
     }
 
-    public void sendMsg(IMMQMessage msg, String routingKey) {
-        rabbitTemplate.convertSendAndReceive(IM_DEFAULT_EXCHANGE_NAME, routingKey, JSON.toJSONString(msg));
+    public void sendMsg(String msg, String routingKey) {
+        IMMQMessage message = IMMQMessage.builder().body(msg).build();
+        rabbitTemplate.convertSendAndReceive(IM_DEFAULT_EXCHANGE_NAME, routingKey, JSON.toJSONString(message));
+    }
+
+
+    public void sendAsyncMsg(String msg, String routingKey) {
+        IMMQMessage immqMessage = IMMQMessage.builder().body(msg).build();
+        MessagePostProcessor processor = new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                String correlationId = UUID.randomUUID().toString();
+                immqMessage.setMsgId(correlationId);
+                message.getMessageProperties().setCorrelationId(correlationId);
+                message.getMessageProperties().setContentEncoding("UTF-8");
+                return message;
+            }
+        };
+
+        asyncRabbitTemplate.convertSendAndReceive(IM_DEFAULT_EXCHANGE_NAME, routingKey, JSON.toJSONString(immqMessage), processor);
+
+
     }
 
     /**

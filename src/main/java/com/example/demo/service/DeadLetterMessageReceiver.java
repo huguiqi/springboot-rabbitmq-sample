@@ -38,7 +38,7 @@ public class DeadLetterMessageReceiver {
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         //作为生产者再次将消息放入
         IMMQMessage immqMessage = JSON.parseObject(body, IMMQMessage.class);
-        immqMessage.setBody(immqMessage.getBody() + "转发");
+//        immqMessage.setBody(immqMessage.getBody() + "转发");
         immqMessage.setRetrySize(immqMessage.getRetrySize() + 1);
         businessMessageSender.sendMsgWithDelay(immqMessage, IM_DELAY_ROUTING_KEY, 5000);
     }

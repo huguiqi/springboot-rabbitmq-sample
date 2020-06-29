@@ -10,21 +10,25 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Slf4j
 @Component
 public class BusinessMessageReceiver {
 
+    private AtomicInteger countSum = new AtomicInteger(0);
+
     @RabbitListener(queues = RabbitMQConfig.IM_PUSH_QUEUE_NAME)
     public void receiveA(Message message, Channel channel) throws IOException {
+        log.info("第{}条数据!!", countSum.addAndGet(1));
         IMMQMessage immqMessage = null;
         String msg = null;
         boolean ack = true;
         Exception exception = null;
-
         try {
-            String body = new String(message.getBody(),"utf-8");
+            String body = new String(message.getBody(), "utf-8");
             immqMessage = JSON.parseObject(body, IMMQMessage.class);
             msg = immqMessage.getBody();
             log.info("收到业务消息A：{}", msg);
