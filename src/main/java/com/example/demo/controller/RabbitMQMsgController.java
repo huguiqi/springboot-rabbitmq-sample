@@ -32,9 +32,9 @@ public class RabbitMQMsgController {
     @RequestMapping("asyncSendmsg")
     public ResponseEntity<String> asyncSendMsg(@RequestBody String msg) {
         long startTime = System.currentTimeMillis();
-//        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100000; i++) {
             sender.sendAsyncMsg(msg, "test.im.routingkey.push.htoneMsg");
-//        }
+        }
         long endTime = System.currentTimeMillis();
         log.info("sendMsg finish!!,花费时间:{}", endTime - startTime);
         return ResponseEntity.ok("SUCCESS");

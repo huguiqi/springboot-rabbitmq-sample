@@ -66,6 +66,7 @@ public class BusinessMessageSender {
     }
 
 
+
     public void sendAsyncMsg(String msg, String routingKey) {
         IMMQMessage immqMessage = IMMQMessage.builder().body(msg).build();
         MessagePostProcessor processor = new MessagePostProcessor() {
@@ -88,12 +89,25 @@ public class BusinessMessageSender {
      * @param msg
      * @param routingKey
      * @param delayTime  延迟时间 单位毫秒
+     * 这种方式是给第条message设置超时时间，会发生不一样的消息超时时间不按时执行的问题，建议要不使用队列设置x-message-ttl，要么固定设置message消息超时时间
      */
     public void sendMsgWithDelay(IMMQMessage msg, String routingKey, long delayTime) {
         MessagePostProcessor processor = new MessagePostProcessor() {
             @Override
             public Message postProcessMessage(Message message) throws AmqpException {
                 message.getMessageProperties().setExpiration(delayTime + "");
+                return message;
+            }
+        };
+        rabbitTemplate.convertSendAndReceive(IM_DEAD_LETTER_PUSH_EXCHANGE, routingKey, JSON.toJSONString(msg), processor);
+    }
+
+
+    public void sendMsg(IMMQMessage msg, String routingKey){
+        MessagePostProcessor processor = new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                message.getMessageProperties().setContentEncoding("UTF-8");
                 return message;
             }
         };

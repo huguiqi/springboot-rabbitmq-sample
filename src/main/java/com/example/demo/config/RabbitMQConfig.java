@@ -49,10 +49,10 @@ public class RabbitMQConfig {
 
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(connectionFactory);
         container.setQueueNames(REPLY_QUEUE_NAME);
-        rabbitTemplate.setRoutingKey(REPLY_ROUTING_KEY);
-        rabbitTemplate.setExchange(REPLY_EXCHANGE_NAME);
-        rabbitTemplate.setReplyAddress(REPLY_ROUTING_KEY);
-        AsyncRabbitTemplate template = new AsyncRabbitTemplate(rabbitTemplate,container,null);
+//        rabbitTemplate.setRoutingKey(REPLY_ROUTING_KEY);
+//        rabbitTemplate.setExchange(REPLY_EXCHANGE_NAME);
+//        rabbitTemplate.setReplyAddress(REPLY_ROUTING_KEY);
+        AsyncRabbitTemplate template = new AsyncRabbitTemplate(rabbitTemplate,container);
         template.setReceiveTimeout(5000);
 
         return template;
@@ -138,6 +138,7 @@ public class RabbitMQConfig {
 //       x-dead-letter-routing-key  这里声明当前队列的死信路由key:使用业务队列
         args.put("x-dead-letter-routing-key", IM_DELAY_PUSH_ROUTING_KEY);
         args.put("durable", true);
+        args.put("x-message-ttl", 3000);
         args.put("x-max-length", 50000);
         return QueueBuilder.durable(IM_DELAY_QUEUE_NAME).withArguments(args).build();
     }
