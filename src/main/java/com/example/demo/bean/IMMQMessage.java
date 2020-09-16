@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IMMQMessage  implements Serializable {
+public class IMMQMessage implements Serializable {
 
     private Integer retrySize = 0;
 
@@ -19,5 +19,11 @@ public class IMMQMessage  implements Serializable {
 
     private String body;
 
-
+    @Override
+    public String toString() {
+        return "IMMQMessage{" +
+                "retrySize=" + retrySize +
+                ", body='" + body + '\'' +
+                '}';
+    }
 }

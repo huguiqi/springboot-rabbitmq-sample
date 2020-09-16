@@ -85,6 +85,26 @@ public class BusinessMessageSender {
 
     }
 
+
+
+    public void sendAsyncMsg(String msg, String routingKey,String exchangeName) {
+        IMMQMessage immqMessage = IMMQMessage.builder().body(msg).build();
+        MessagePostProcessor processor = new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                String correlationId = UUID.randomUUID().toString();
+                immqMessage.setMsgId(correlationId);
+                message.getMessageProperties().setCorrelationId(correlationId);
+                message.getMessageProperties().setContentEncoding("UTF-8");
+                return message;
+            }
+        };
+
+        asyncRabbitTemplate.convertSendAndReceive(exchangeName, routingKey, JSON.toJSONString(immqMessage), processor);
+
+
+    }
+
     /**
      * @param msg
      * @param routingKey

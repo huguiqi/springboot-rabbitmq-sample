@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 
-@Configuration
+//@Configuration
 public class RabbitMQConfig {
 
     public static final String IM_DEFAULT_EXCHANGE_NAME = "test.im.exchange.push";
