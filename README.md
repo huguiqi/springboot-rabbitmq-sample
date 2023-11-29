@@ -172,7 +172,7 @@ pom.xml:
 
 4. rabbitMQ知识地图
 
-![知识地图](.README_images/79ef4fa3.png)
+![知识地图](.README_images/RabbitMQ.png)
 
 [下载地图](.README_images/RabbitMQ.png)
 
