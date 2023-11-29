@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IMMQMessage implements Serializable {
+public class BizMQMessage implements Serializable {
 
     private Integer retrySize = 0;
 

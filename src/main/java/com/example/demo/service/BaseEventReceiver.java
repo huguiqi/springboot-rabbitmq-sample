@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
 import com.alibaba.fastjson.JSON;
-import com.example.demo.bean.IMMQMessage;
+import com.example.demo.bean.BizMQMessage;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -16,20 +16,20 @@ public abstract class BaseEventReceiver {
     public void receive(Message message, Channel channel) throws IOException {
         log.info("BaseIMReceiver.receive,mq头信息：{}", message.getMessageProperties());
         log.info("收到的mq消息：{}", message.getBody());
-        IMMQMessage immqMessage = null;
-        String msg = null;
+        BizMQMessage bizMQMessage = null;
+        String msg = message.getBody().toString();
 
         try {
             String body = new String(message.getBody(), "utf-8");
-            immqMessage = JSON.parseObject(body, IMMQMessage.class);
-            msg = immqMessage.getBody();
+            bizMQMessage = JSON.parseObject(body, BizMQMessage.class);
+            msg = bizMQMessage.getBody();
             log.info("接收转换的body消息：{}", msg);
         } catch (UnsupportedEncodingException e) {
             log.error("消息格式不正确，error msg:{}", message.getBody());
         }
 
         if (!StringUtils.hasText(msg)) {
-            //ack返回true，告诉服务器收到这条消息 已经被我消费了 可以在队列删掉 这样以后就不会再发了
+            //告诉服务器收到这条消息 已经被我消费了 可以在队列删掉 这样以后就不会再发了
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             log.warn("转换mq的message出问题，将错误格式的消息从队列中清除!!,message:{}", message.getBody());
             return;
@@ -37,10 +37,9 @@ public abstract class BaseEventReceiver {
 
         boolean ack = true;
         Exception exception = null;
-        if (immqMessage.getRetrySize() < 3) {
+        if (bizMQMessage.getRetrySize() < 3) {
             try {
                 processing(msg);
-                ack = true;
             } catch (Exception e) {
                 ack = false;
                 exception = e;

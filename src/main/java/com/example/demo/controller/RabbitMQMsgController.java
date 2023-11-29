@@ -2,10 +2,16 @@ package com.example.demo.controller;
 
 import com.example.demo.config.RabbitMQConfig2;
 import com.example.demo.service.BusinessMessageSender;
+import com.example.demo.service.Event2ReceiverImpl;
+import com.example.demo.service.counter.TotalCounterFanout1;
+import com.example.demo.service.counter.TotalCounterSendMQ;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RequestMapping("rabbitmq")
@@ -14,6 +20,11 @@ public class RabbitMQMsgController {
 
     @Autowired
     private BusinessMessageSender sender;
+
+    @Autowired
+    private Event2ReceiverImpl event2Receiver;
+
+    private boolean flag = true;
 
     @RequestMapping("sendmsg")
     public ResponseEntity<String> sendMsg(String msg) {
@@ -38,15 +49,31 @@ public class RabbitMQMsgController {
     }
 
 
-    @PostMapping("fanout/{routingKey}")
-    public ResponseEntity<String> fanout(@RequestBody String msg, @PathVariable("routingKey") String routingKey) {
+    @PostMapping("fanout/{nums}")
+    public ResponseEntity<String> fanout(@RequestBody String msg, @PathVariable("nums") Long nums) {
         long startTime = System.currentTimeMillis();
-        sender.sendAsyncMsg(msg, routingKey, RabbitMQConfig2.TEST_FANOUT_EXCHANGE);
+        for (int i = 0; i < nums; i++) {
+            sender.sendAsyncMsg(msg, null, RabbitMQConfig2.TEST_FANOUT_EXCHANGE);
+        }
+
         long endTime = System.currentTimeMillis();
         log.info("fanout finish!!,花费时间:{}", endTime - startTime);
         return ResponseEntity.ok("SUCCESS");
     }
 
+
+    @PostMapping("fanout")
+    public ResponseEntity<String> fanout2(@RequestBody String msg) {
+        sender.sendAsyncMsg(msg, null, RabbitMQConfig2.TEST_FANOUT_EXCHANGE);
+        return ResponseEntity.ok("SUCCESS");
+    }
+
+
+    @GetMapping("/settingFlag/{flag}")
+    public ResponseEntity<String> settingFlag(@PathVariable("flag") Boolean inputFlag) {
+        flag = inputFlag;
+        return ResponseEntity.ok("SUCCESS,flag:" + flag);
+    }
 
     @PostMapping("topic/{routingKey}")
     public ResponseEntity<String> topic(@RequestBody String msg, @PathVariable("routingKey") String routingKey) {
@@ -68,4 +95,31 @@ public class RabbitMQMsgController {
     }
 
 
+    @GetMapping("testCount/{size}")
+    public ResponseEntity<String> testCount(@PathVariable("size") Long size) {
+        long startTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
+        List<Long> list = new ArrayList<>(100);
+        for (Long i = 0L; i < size; i++) {
+            list.add(i);
+        }
+        list.parallelStream().forEach(aLong -> {
+            System.out.println(aLong);
+            event2Receiver.processing2("helloaaaa");
+        });
+
+        log.info("topic finish!!,花费时间:{}", endTime - startTime);
+        return ResponseEntity.ok("SUCCESS");
+    }
+
+
+    @GetMapping("getCount")
+    public ResponseEntity<String> getCount() {
+        long startTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
+        TotalCounterFanout1 counterFanout1 = TotalCounterFanout1.getInstance();
+
+        log.info("topic finish!!,花费时间:{}", endTime - startTime);
+        return ResponseEntity.ok("success:" + counterFanout1.givenCurrentValue());
+    }
 }

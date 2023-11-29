@@ -25,6 +25,12 @@ public class BusinessAConsumer {
     @Autowired
     private BaseEventReceiver event3Receiver;
 
+    @Autowired
+    private BaseEventReceiver event4Receiver;
+
+    @Autowired
+    private BaseEventReceiver event5Receiver;
+
     //rbmq 投递
     @RabbitListener(queues = RabbitMQConfig2.EVENT1_QUEUE_NAME)
     public void pushReceiver(Message message, Channel channel) throws IOException {
@@ -33,7 +39,7 @@ public class BusinessAConsumer {
     }
 
 
-    //rbmq 订阅1
+    //rbmq 订阅1(fanout)
     @RabbitListener(queues = RabbitMQConfig2.EVENT2_QUEUE_NAME)
     public void event2Receiver(Message message, Channel channel) throws IOException {
 
@@ -41,12 +47,28 @@ public class BusinessAConsumer {
     }
 
 
-    //rbmq 订阅2
+    //rbmq 订阅2(fanout)
     @RabbitListener(queues = RabbitMQConfig2.EVENT3_QUEUE_NAME)
     public void event3Receiver(Message message, Channel channel) throws IOException {
 
         event3Receiver.receive(message,channel);
     }
 
+
+
+    //rbmq topic1
+    @RabbitListener(queues = RabbitMQConfig2.EVENT4_QUEUE_NAME)
+    public void event4Receiver(Message message, Channel channel) throws IOException {
+
+        event4Receiver.receive(message,channel);
+    }
+
+
+    //rbmq topic2
+    @RabbitListener(queues = RabbitMQConfig2.EVENT5_QUEUE_NAME)
+    public void event5Receiver(Message message, Channel channel) throws IOException {
+
+        event5Receiver.receive(message,channel);
+    }
 
 }

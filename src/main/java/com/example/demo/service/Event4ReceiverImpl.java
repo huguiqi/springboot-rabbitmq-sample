@@ -1,20 +1,21 @@
 package com.example.demo.service;
 
-import com.example.demo.service.counter.TotalCounterDirect;
+import com.example.demo.service.counter.TotalCounterFanout1;
 import com.example.demo.service.counter.TotalCounterTopic1;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service("event1Receiver")
-public class Event1ReceiverImpl extends BaseEventReceiver {
+@Service("event4Receiver")
+public class Event4ReceiverImpl extends BaseEventReceiver {
 
 
     @Override
     protected void processing(String body) {
-        TotalCounterDirect counter = TotalCounterDirect.getInstance();
+        log.info("处理收到的event4数据,message:{}",body);
+        TotalCounterTopic1 counter = TotalCounterTopic1.getInstance();
         counter.addCounter();
-        log.info("处理收到的event1数据,message:{}",body);
     }
 
     @Override
