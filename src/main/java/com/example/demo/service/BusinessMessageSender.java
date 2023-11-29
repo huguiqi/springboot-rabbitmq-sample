@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.alibaba.fastjson.JSON;
 import com.example.demo.bean.BizMQMessage;
-import com.example.demo.config.RabbitMQConfig2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
