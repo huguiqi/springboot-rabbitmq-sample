@@ -174,7 +174,7 @@ pom.xml:
 
 ![知识地图](.README_images/79ef4fa3.png)
 
-[下载地图](.README_images/RabbitMQ.xmind)
+[下载地图](.README_images/RabbitMQ.png)
 
 5. 什么是死信队列
 
